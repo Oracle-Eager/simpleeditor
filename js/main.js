@@ -51,7 +51,6 @@ const EDITOR_STATE_KEY = 'omniCodeEditorState_v5.0.0';
         const pythonInputField = document.getElementById('python-input-field');
         const pythonInputSubmit = document.getElementById('python-input-submit');
         const pythonInputCancel = document.getElementById('python-input-cancel');
-        const resizer = document.getElementById('resizer');
         const closePanelBtn = document.getElementById('close-panel-btn');
         const clearOutputBtn = document.getElementById('clear-output-btn');
         const openOutputWindowBtn = document.getElementById('open-output-window-btn');
@@ -85,10 +84,6 @@ const EDITOR_STATE_KEY = 'omniCodeEditorState_v5.0.0';
         const editorContainer = document.getElementById('editor-container');
         const editor2Element = document.getElementById('editor2');
         const deployBtn = document.getElementById('deploy-btn');
-        const deployModal = document.getElementById('deploy-modal');
-        const deployNetlifyBtn = document.getElementById('deploy-netlify');
-        const deployVercelBtn = document.getElementById('deploy-vercel');
-        const cancelDeployBtn = document.getElementById('cancel-deploy');
 
         let editor2;
         let autoSaveTimeout;
@@ -361,22 +356,19 @@ If you cannot fulfill a request (e.g., unethical, impossible), state clearly and
         }
         function adjustLayout(forceHeightFraction = null) {
             const mainContent = document.querySelector('.main-content');
-            if (!mainContent || !editorElement || !outputPanel || !resizer) return;
+            if (!mainContent || !editorElement || !outputPanel) return;
 
             const totalHeight = mainContent.clientHeight;
             if (totalHeight <= 0) return;
 
             let panelH = 0;
             let editorH = totalHeight;
-            let resizerH = resizer.offsetHeight;
             let currentHeightFraction = forceHeightFraction ?? lastPanelHeightFraction;
 
             if (isPanelFullscreen) {
                 panelH = totalHeight;
                 editorH = 0;
-                resizerH = 0;
                 outputPanel.classList.add('fullscreen');
-                resizer.style.display = 'none';
                 outputPanel.classList.remove('hidden');
                 panelVisible = true;
                  if(toggleFullscreenPanelBtn) {
@@ -384,18 +376,13 @@ If you cannot fulfill a request (e.g., unethical, impossible), state clearly and
                     toggleFullscreenPanelBtn.title = 'Exit Fullscreen Panel';
                  }
             } else if (panelVisible) {
-                const maxPanelHeight = totalHeight - EDITOR_MIN_HEIGHT_PX - resizerH;
+                const maxPanelHeight = totalHeight - EDITOR_MIN_HEIGHT_PX;
                 const minPanelHeight = PANEL_MIN_HEIGHT_PX;
 
                 panelH = totalHeight * currentHeightFraction;
                 panelH = Math.max(minPanelHeight, Math.min(maxPanelHeight, panelH));
 
-                editorH = totalHeight - panelH - resizerH;
-                if (editorH < EDITOR_MIN_HEIGHT_PX) {
-                    editorH = EDITOR_MIN_HEIGHT_PX;
-                    panelH = totalHeight - editorH - resizerH;
-                    panelH = Math.max(0, panelH);
-                }
+                editorH = totalHeight;
 
                 if (totalHeight > 0 && panelH > 0) {
                     lastPanelHeightFraction = panelH / totalHeight;
@@ -404,8 +391,6 @@ If you cannot fulfill a request (e.g., unethical, impossible), state clearly and
                 }
 
                 outputPanel.style.height = `${panelH}px`;
-                editorElement.style.height = `${editorH}px`;
-                resizer.style.display = 'block';
                 outputPanel.classList.remove('hidden', 'fullscreen');
                  if(toggleFullscreenPanelBtn) {
                     toggleFullscreenPanelBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i>';
@@ -414,11 +399,8 @@ If you cannot fulfill a request (e.g., unethical, impossible), state clearly and
             } else {
                 panelH = 0;
                 editorH = totalHeight;
-                resizerH = 0;
-                resizer.style.display = 'none';
                 outputPanel.classList.add('hidden');
                 outputPanel.classList.remove('fullscreen');
-                editorElement.style.height = `${editorH}px`;
                  if(toggleFullscreenPanelBtn) {
                     toggleFullscreenPanelBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i>';
                     toggleFullscreenPanelBtn.title = 'Toggle Panel Fullscreen';
@@ -1408,19 +1390,20 @@ REMEMBER: Your response must contain *only* the raw, generated code block itself
          }
 
         function showPanel() {
-             if (!outputPanel || !resizer || panelVisible) return;
+             if (!outputPanel || panelVisible) return;
              panelVisible = true;
              isPanelFullscreen = false;
+             outputPanel.classList.remove('hidden');
              adjustLayout(lastPanelHeightFraction > 0 ? lastPanelHeightFraction : PANEL_DEFAULT_HEIGHT_FRACTION);
              updatePreviewRunButtonState();
              debouncedSaveState();
              switchOutputTab(activeOutputTab, true);
         }
         function hidePanel() {
-             if (!outputPanel || !resizer || !panelVisible) return;
+             if (!outputPanel || !panelVisible) return;
              panelVisible = false;
              isPanelFullscreen = false;
-             adjustLayout();
+             outputPanel.classList.add('hidden');
              updatePreviewRunButtonState();
              debouncedSaveState();
              if (moreToolsPanel && moreToolsPanel.classList.contains('visible')) {
@@ -2502,40 +2485,6 @@ REMEMBER: Respond with *only* the raw, modified ${lang} code snippet itself. Do 
                  }
             });
 
-            resizer?.addEventListener('mousedown', (e) => {
-                if (isPanelFullscreen || !panelVisible) return;
-                e.preventDefault();
-                const mainContent = document.querySelector('.main-content'); if (!mainContent || !outputPanel || !editorElement || !resizer) return;
-                const startY = e.clientY; const startPanelH = outputPanel.offsetHeight; const totalHeight = mainContent.clientHeight;
-                const resizerHeight = resizer.offsetHeight;
-
-                function handleMouseMove(moveEvent) {
-                     if (moveEvent.buttons !== 1) { handleMouseUp(); return; }
-                     moveEvent.preventDefault();
-                     const currentY = moveEvent.clientY; const diffY = currentY - startY;
-                     const maxPanelHeight = totalHeight - EDITOR_MIN_HEIGHT_PX - resizerHeight;
-                     const minPanelHeight = PANEL_MIN_HEIGHT_PX;
-                     let newPanelH = startPanelH - diffY;
-                     newPanelH = Math.max(minPanelHeight, Math.min(maxPanelHeight, newPanelH));
-
-                     outputPanel.style.height = `${newPanelH}px`;
-                     editorElement.style.height = `${totalHeight - newPanelH - resizerHeight}px`;
-                     if (editor) editor.resize(true);
-                }
-
-                function handleMouseUp() {
-                     document.removeEventListener('mousemove', handleMouseMove);
-                     document.removeEventListener('mouseup', handleMouseUp);
-                     const finalPanelHeight = outputPanel.offsetHeight;
-                     if (totalHeight > 0 && finalPanelHeight > 0) {
-                         lastPanelHeightFraction = finalPanelHeight / totalHeight;
-                     }
-                     debouncedSaveState();
-                }
-
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-            });
 
             const debouncedAdjustLayoutOnResize = debounce(() => {
                 if (!editor) return;
@@ -2752,18 +2701,123 @@ REMEMBER: Respond with *only* the raw, modified ${lang} code snippet itself. Do 
         }
 
         toggleFileTreeBtn?.addEventListener('click', () => {
-            fileTree.style.width = fileTree.style.width === '0px' ? '250px' : '0px';
+            fileTree.classList.toggle('open');
         });
 
+        let fileSystem = {
+            "index.html": "",
+            "css": {
+                "style.css": ""
+            },
+            "js": {
+                "main.js": ""
+            }
+        };
+
         function renderFileTree() {
-            // This is a placeholder for now. I will implement the actual file tree logic later.
-            fileTreeContent.innerHTML = `
-                <ul>
-                    <li>index.html</li>
-                    <li>css/style.css</li>
-                    <li>js/main.js</li>
-                </ul>
-            `;
+            fileTreeContent.innerHTML = '';
+            const tree = document.createElement('ul');
+            buildFileTree(fileSystem, tree);
+            fileTreeContent.appendChild(tree);
+        }
+
+        function buildFileTree(data, parentElement) {
+            for (const key in data) {
+                const li = document.createElement('li');
+                li.textContent = key;
+                if (typeof data[key] === 'object') {
+                    li.classList.add('folder');
+                    const ul = document.createElement('ul');
+                    buildFileTree(data[key], ul);
+                    li.appendChild(ul);
+                } else {
+                    li.addEventListener('click', () => {
+                        openFile(key);
+                    });
+                }
+                parentElement.appendChild(li);
+            }
+        }
+
+        const contextMenu = document.getElementById('file-tree-context-menu');
+        const newFileContext = document.getElementById('new-file-context');
+        const newFolderContext = document.getElementById('new-folder-context');
+        const renameContext = document.getElementById('rename-context');
+        const deleteContext = document.getElementById('delete-context');
+
+        let contextTarget = null;
+
+        fileTreeContent.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            contextTarget = e.target;
+            contextMenu.style.display = 'block';
+            contextMenu.style.top = `${e.pageY}px`;
+            contextMenu.style.left = `${e.pageX}px`;
+        });
+
+        document.addEventListener('click', () => {
+            contextMenu.style.display = 'none';
+        });
+
+        newFileContext.addEventListener('click', () => {
+            const fileName = prompt('Enter file name:');
+            if (fileName) {
+                const path = getPath(contextTarget);
+                setPath(fileSystem, path, fileName, "");
+                renderFileTree();
+            }
+        });
+
+        newFolderContext.addEventListener('click', () => {
+            const folderName = prompt('Enter folder name:');
+            if (folderName) {
+                const path = getPath(contextTarget);
+                setPath(fileSystem, path, folderName, {});
+                renderFileTree();
+            }
+        });
+
+        renameContext.addEventListener('click', () => {
+            const newName = prompt('Enter new name:');
+            if (newName) {
+                const path = getPath(contextTarget);
+                const parentPath = path.slice(0, -1);
+                const oldName = path[path.length - 1];
+                const parent = getPath(fileSystem, parentPath);
+                parent[newName] = parent[oldName];
+                delete parent[oldName];
+                renderFileTree();
+            }
+        });
+
+        deleteContext.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this file/folder?')) {
+                const path = getPath(contextTarget);
+                const parentPath = path.slice(0, -1);
+                const name = path[path.length - 1];
+                const parent = getPath(fileSystem, parentPath);
+                delete parent[name];
+                renderFileTree();
+            }
+        });
+
+        function getPath(target) {
+            const path = [];
+            while (target && target !== fileTreeContent) {
+                path.unshift(target.childNodes[0].textContent.trim());
+                target = target.parentElement.closest('li');
+            }
+            return path;
+        }
+
+        function setPath(obj, path, key, value) {
+            let current = obj;
+            for (let i = 0; i < path.length; i++) {
+                if (typeof current[path[i]] === 'object') {
+                    current = current[path[i]];
+                }
+            }
+            current[key] = value;
         }
 
         function openFile(fileName) {
@@ -2834,24 +2888,6 @@ REMEMBER: Respond with *only* the raw, modified ${lang} code snippet itself. Do 
             if (editor2) {
                 editor2.resize();
             }
-        });
-
-        deployBtn?.addEventListener('click', () => {
-            deployModal.style.display = 'block';
-        });
-
-        cancelDeployBtn?.addEventListener('click', () => {
-            deployModal.style.display = 'none';
-        });
-
-        deployNetlifyBtn?.addEventListener('click', () => {
-            alert('Deploying to Netlify!');
-            deployModal.style.display = 'none';
-        });
-
-        deployVercelBtn?.addEventListener('click', () => {
-            alert('Deploying to Vercel!');
-            deployModal.style.display = 'none';
         });
 
         document.addEventListener('DOMContentLoaded', () => {

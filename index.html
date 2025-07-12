@@ -143,7 +143,6 @@
             <div id="editor2" style="display: none;"></div>
         </div>
         <div id="drag-drop-overlay"><i class="fas fa-file-import"></i> Drop file to open</div>
-        <div id="resizer"></div>
         <div id="output-panel" class="hidden">
             <div class="output-header">
                 <div class="output-tabs">
@@ -243,12 +242,13 @@
         </div>
     </div>
 
-    <script src="js/main.js"></script>
-    <div id="deploy-modal" style="display: none;">
-        <h2>Deploy to:</h2>
-        <button id="deploy-netlify">Netlify</button>
-        <button id="deploy-vercel">Vercel</button>
-        <button id="cancel-deploy">Cancel</button>
+    <div id="file-tree-context-menu" class="context-menu">
+        <div class="context-menu-item" id="new-file-context">New File</div>
+        <div class="context-menu-item" id="new-folder-context">New Folder</div>
+        <div class="context-menu-item" id="rename-context">Rename</div>
+        <div class="context-menu-item" id="delete-context">Delete</div>
     </div>
+
+    <script src="js/main.js"></script>
 </body>
 </html>

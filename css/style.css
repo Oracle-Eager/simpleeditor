@@ -211,6 +211,39 @@
             overflow-y: auto;
             padding: 10px;
         }
+
+        .file-tree-content ul {
+            list-style-type: none;
+            padding-left: 15px;
+        }
+
+        .file-tree-content li {
+            padding: 4px 0;
+            cursor: pointer;
+        }
+
+        .file-tree-content .folder {
+            font-weight: bold;
+        }
+
+        .context-menu {
+            display: none;
+            position: absolute;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--panel-border);
+            border-radius: 5px;
+            z-index: 1000;
+            width: 150px;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--button-hover-bg);
+        }
         .editor-container {
             flex-grow: 1;
             display: flex;
@@ -275,10 +308,23 @@
         }
         #resizer:hover { background-color: var(--resizer-hover-color); height: 8px; margin-top: -1px; margin-bottom: -1px; }
         #output-panel {
-            height: 50%;
-            background-color: var(--bg-secondary); border-top: 1px solid var(--panel-border);
-            display: flex; flex-direction: column; overflow: hidden;
-            flex-shrink: 0; transition: height 0.1s ease-out;
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 800px;
+            height: 40%;
+            max-height: 500px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.3s ease-out;
+            z-index: 1002;
         }
         #output-panel.hidden { display: none; }
         #output-panel.fullscreen #editor,
@@ -738,72 +784,18 @@
         .command-item.hidden { display: none; }
 
 
-        @media (max-width: 900px) {
-            .title { font-size: 1rem; margin-right: 10px; gap: 6px; }
-            .header { padding: 5px 10px; gap: 6px 10px;}
-            select, .btn { padding: 5px 7px; font-size: 0.85rem; height: 30px; }
-            .btn { font-size: 1rem; padding: 4px 6px; min-width: 30px; height: 30px; }
-             #more-tools-panel { min-width: 180px; padding: 6px; gap: 5px; }
-             #more-tools-panel .btn { padding: 6px 8px; font-size: 0.85rem; }
-            .output-header { padding: 0 5px; }
-            .output-tab { padding: 6px 10px; font-size: 12px; height: 32px; line-height: calc(32px - 12px - 2px); }
-            .output-controls { padding-right: 0; }
-            .output-controls .btn { height: 26px; }
-            #editor { font-size: 14px; }
-            .status-bar { padding: 3px 10px; font-size: 11px; min-height: unset; }
-            #status-message { order: 1; width: 100%; margin-bottom: 2px; justify-content: flex-start; text-align: left; }
-            #status-message .status-text { max-width: calc(100vw - 120px); }
-            #cursor-position { order: 2; }
-            #editor-info { order: 3; }
-            #ai-chat-messages { padding: 15px; gap: 18px; }
-            .chat-message-wrapper { max-width: 92%; }
-            .chat-message { padding: 10px 15px; border-radius: 10px; }
-            #ai-chat-input-area { padding: 12px; gap: 10px; flex-direction: column; }
-            #chat-input-top-row { width: 100%; order: 1; }
-            #chat-input-bottom-row { width: 100%; order: 2; }
-            #ai-chat-input { padding: 9px 13px; font-size: 0.98em; max-height: 150px; }
-            .chat-button { height: 40px; min-width: 40px; font-size: 1.15rem; }
-            #chat-image-preview { width: 44px; height: 44px; }
-            #chat-clear-image-btn { width: 26px; height: 26px; min-width: 26px; font-size: 0.8rem; }
-            #python-input-box { width: 90%; padding: 20px 25px; gap: 12px; }
+        @media (max-width: 1024px) {
+            .file-tree-panel {
+                position: absolute;
+                z-index: 1001;
+                width: 250px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            .file-tree-panel.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                flex-direction: column;
+            }
         }
-         @media (max-width: 600px) {
-            .controls { gap: 4px; }
-            .control-group { gap: 3px; }
-            select, .btn { padding: 4px 5px; min-width: 28px; height: 28px; font-size: 0.8rem; }
-            .btn { font-size: 0.9rem; height: 28px; }
-            #more-tools-panel { top: calc(100% + 3px); right: 5px; }
-            .output-header { flex-direction: column; align-items: stretch; padding: 5px; }
-            .output-tabs { order: 1; justify-content: flex-start; overflow-x: auto; padding-bottom: 2px;}
-            .output-controls { order: 2; justify-content: flex-end; margin-left: 0; padding: 5px 0 0 0;}
-            .output-tab { padding: 5px 8px; font-size: 11px; height: 30px; line-height: calc(30px - 10px - 2px); }
-            .output-controls .btn { height: 24px; }
-            #ai-chat-input-area { padding: 10px; gap: 8px; }
-            .chat-input-bottom-row { gap: 8px; }
-            .chat-input-left-buttons { gap: 6px; }
-            #ai-chat-input { padding: 8px 11px; }
-            .chat-button { height: 38px; min-width: 38px; font-size: 1.1rem; }
-            #chat-image-preview { width: 40px; height: 40px; }
-            #chat-clear-image-btn { width: 24px; height: 24px; min-width: 24px; font-size: 0.75rem; }
-            .chat-message pre { padding: 12px; padding-top: 40px; font-size: 0.92em; }
-            .code-header { height: 32px; padding: 5px 8px; }
-            .code-action-button { padding: 3px 5px; font-size: 0.8em; margin-left: 4px; height: 22px; }
-            #status-message .status-text { max-width: calc(100vw - 100px); }
-            #python-input-box label { font-size: 0.9em; }
-            #python-input-field { font-size: 0.95em; }
-            #command-palette { max-width: 95vw; }
-         }
-          @media (max-width: 420px) {
-             .title { font-size: 0.9rem; margin-right: 5px; gap: 5px;}
-             .control-group { justify-content: center; }
-             #ai-chat-messages { padding: 12px; gap: 15px; }
-             #ai-chat-input-area { padding: 8px; gap: 6px; }
-             .chat-input-bottom-row { gap: 6px; }
-             .chat-button { height: 36px; min-width: 36px; font-size: 1rem; }
-             #chat-image-preview { width: 36px; height: 36px; }
-             #chat-clear-image-btn { width: 22px; height: 22px; min-width: 22px; font-size: 0.7rem; }
-             #more-tools-panel { width: calc(100% - 10px); left: 5px; right: 5px; min-width: unset; }
-             #python-input-box { width: 95%; padding: 15px 20px; }
-             .chat-input-left-buttons { flex-direction: column; align-items: center; gap: 4px;}
-             .chat-button { height: 36px; min-width: 36px; }
-          }
